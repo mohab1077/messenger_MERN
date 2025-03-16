@@ -209,6 +209,7 @@ useEffect(()=>{
         body: JSON.stringify({
           data: message,
           username,
+          time:new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         }),
       });
       if (!res.ok) {
@@ -336,7 +337,7 @@ const handeldelettfriend = async ()=>{
                     color: "text.secondary",
                   }}
                 >
-                  {10}
+                  {msg.time}
                 </Typography>
               </MessageBubble>
             </Box>

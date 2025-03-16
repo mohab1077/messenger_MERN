@@ -5,9 +5,10 @@ interface msgg {
   myuser: string;
   data: string;
   username: string;
+  time:string;
 }
 
-export const sendmsg = async ({ myuser, data, username }: msgg) => {
+export const sendmsg = async ({ myuser, data, username,time }: msgg) => {
   const findmyuser = await usermodel.findById(myuser);
   if (!findmyuser) {
     return { status: 400, msg: "error" };
@@ -28,7 +29,7 @@ export const sendmsg = async ({ myuser, data, username }: msgg) => {
   if (!findchat) {
     findchat = await chatModel.create({ usernames });
   }
-  findchat.msg.push({ user: myusername, msg: data });
+  findchat.msg.push({ user: myusername, msg: data , time:time });
   findchat.save();
   return { status: 200, msg: findchat.msg };
 };

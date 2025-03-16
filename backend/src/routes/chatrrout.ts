@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.post("/",middlware , async(req:reb , res)=>{
     const myuser = req?.user?._id
-    const {data,username} = req.body
-    const {status , msg} = await sendmsg({myuser,data,username})
+    const {data,username,time} = req.body
+    const {status , msg} = await sendmsg({myuser,data,username,time})
     res.status(status).json(msg)
     
    
