@@ -118,6 +118,12 @@ const Chatcard = ({ username }: prop) => {
     setMessages([]);
     setAnchorEl(null);
   };
+
+
+ 
+
+
+
   const fetchCart = async () => {
     const response = await fetch(`${BASE_URL}/chat`, {
       method: "PUT",
@@ -137,16 +143,51 @@ const Chatcard = ({ username }: prop) => {
     const data = await response.json();
     setMessages(data);
   };
+  
+useEffect(()=>{
+  fetchCart()
+},[username])
+  const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    if (!token) {
-      return;
-    }
-
+    if (!token) return;
+    
   
-
-    fetchCart();
-  }, );
+    // ✅ إنشاء اتصال WebSocket
+    socketRef.current = new WebSocket(`${BASE_URL.replace("http", "ws")}/chat`);
+  
+    socketRef.current.onopen = () => {
+      console.log("✅ WebSocket Connected");
+  
+      // ✅ إرسال بيانات المستخدم عند الاتصال
+      socketRef.current?.send(
+        JSON.stringify({
+          type: "join",
+          token,
+          username,
+        })
+      );
+    };
+  
+    // ✅ استقبال الرسائل الجديدة
+    socketRef.current.onmessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+  
+        if (data.type === "newMessage") {
+          setMessages((prevMessages) => [...prevMessages, data.message]);
+        }
+      } catch (error) {
+        console.error("❌ خطأ في استقبال البيانات:", error);
+      }
+    };
+  
+    // ✅ تنظيف WebSocket عند تفريغ الـ component
+    return () => {
+      socketRef.current?.close();
+      console.log("❌ WebSocket Closed");
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -158,14 +199,7 @@ const Chatcard = ({ username }: prop) => {
 
   const handleSend = async () => {
     if (message.trim()) {
-      setMessages([
-        ...messages,
-        {
-          msg: message,
-          user: myusername,
-          _id:""
-        },
-      ]);
+      
       const res = await fetch(`${BASE_URL}/chat/`, {
         method: "POST",
         headers: {
@@ -181,6 +215,20 @@ const Chatcard = ({ username }: prop) => {
         return;
       }
       console.log(res);
+
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.send(
+          JSON.stringify({
+            type: "sendMessage",
+            data: message,
+            username: myusername,
+          })
+        );
+        console.log("✅ الرسالة تم إرسالها إلى WebSocket");
+      } else {
+        console.error("❌ WebSocket غير متصل، لم يتم إرسال الرسالة");
+      }
+  
 
       setMessage("");
     }
@@ -316,12 +364,14 @@ const handeldelettfriend = async ()=>{
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setMessage(e.target.value)
             }
+            
             size="small"
           />
           <IconButton
             color="primary"
             onClick={handleSend}
             disabled={!message.trim()}
+           
           >
             <FiSend />
           </IconButton>

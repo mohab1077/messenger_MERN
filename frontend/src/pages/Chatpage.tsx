@@ -9,7 +9,7 @@ import {
   Menu,
 } from "@mui/material";
 import Friendscard2 from "../componts/Friendscard2";
-import Chatcard from "../componts/chatcard";
+import Chatcard from "../componts/Chatcard";
 import AccountCircleSharpIcon from "@mui/icons-material/AccountCircleSharp";
 import { useEffect, useRef, useState } from "react";
 import { friendtype } from "../types/friendtype";
